@@ -18,10 +18,18 @@ const imageCanvas = document.querySelector('#image-canvas');
 const imgInput = document.querySelector('#image-input');
 const resetButton = document.querySelector('#reset-btn');
 const downloadButton = document.querySelector('#download-btn');
+const animButton = document.querySelector('#anim-btn');
+const recordButton = document.querySelector('#record-btn');
 const dropZone = document.querySelector('.bottom');
 const canvasCtx = imageCanvas.getContext('2d');
 let file = null;
 let image = null;
+
+let isAnimating = false;
+let animationId = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let isRecording = false;
 
 function createFilterElement(name, unit = '%', value, min, max) {
     const div = document.createElement('div');
@@ -52,7 +60,7 @@ function createFilterElement(name, unit = '%', value, min, max) {
     input.addEventListener('input', (event) => {
         filters[name].value = input.value;
         valDisplay.innerText = `${input.value}${unit}`;
-        applyFilters();
+        if (!isAnimating) applyFilters();
     });
 
     return div;
@@ -124,6 +132,7 @@ function loadImage(file) {
         imageCanvas.width = img.width;
         imageCanvas.height = img.height;
         applyFilters();
+        if (recordButton) recordButton.disabled = false;
     };
 }
 
@@ -132,10 +141,8 @@ imgInput.addEventListener('change', () => {
     if (file) loadImage(file);
 });
 
-function applyFilters() {
-    if (!image) return;
-    canvasCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
-    canvasCtx.filter = `
+function getFilterString() {
+    return `
     brightness(${filters.brightness.value}${filters.brightness.unit})
     contrast(${filters.contrast.value}${filters.contrast.unit})
     saturate(${filters.saturation.value}${filters.saturation.unit})
@@ -146,11 +153,123 @@ function applyFilters() {
     opacity(${filters.opacity.value}${filters.opacity.unit})
     invert(${filters.invert.value}${filters.invert.unit})
     `.trim();
+}
+
+function applyFilters() {
+    if (!image) return;
+    canvasCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+    canvasCtx.filter = getFilterString();
     canvasCtx.drawImage(image, 0, 0);
+}
+
+// --- Animation Logic ---
+
+function toggleAnimation() {
+    if (isAnimating) {
+        isAnimating = false;
+        cancelAnimationFrame(animationId);
+        animButton.innerHTML = `<i class="ri-movie-line"></i> Animate`;
+        applyFilters(); // Reset to static
+    } else {
+        if (!image) return;
+        isAnimating = true;
+        animButton.innerHTML = `<i class="ri-pause-line"></i> Stop`;
+        animateGlitch();
+    }
+}
+
+animButton.addEventListener('click', toggleAnimation);
+
+function animateGlitch() {
+    if (!isAnimating) return;
+
+    // 1. Draw base filtered image
+    canvasCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+    canvasCtx.filter = getFilterString();
+    canvasCtx.drawImage(image, 0, 0);
+
+    // 2. Add Glitch Effects
+    if (Math.random() > 0.8) {
+        const sliceHeight = Math.random() * 50 + 5;
+        const sliceY = Math.random() * imageCanvas.height;
+        const offset = (Math.random() - 0.5) * 40;
+        canvasCtx.drawImage(
+            imageCanvas,
+            0, sliceY, imageCanvas.width, sliceHeight, // Source
+            offset, sliceY, imageCanvas.width, sliceHeight // Dest
+        );
+    }
+
+    // RGB Split / Color Shift
+    if (Math.random() > 0.9) {
+        const offset = (Math.random() - 0.5) * 10;
+        canvasCtx.globalCompositeOperation = 'screen';
+        canvasCtx.filter = getFilterString() + ` hue-rotate(90deg) opacity(0.5)`;
+        canvasCtx.drawImage(image, offset, 0);
+        canvasCtx.globalCompositeOperation = 'source-over';
+    }
+
+    animationId = requestAnimationFrame(animateGlitch);
+}
+
+// --- Recording Logic ---
+
+recordButton.addEventListener('click', () => {
+    if (isRecording) {
+        stopRecording();
+    } else {
+        startRecording();
+    }
+});
+
+function startRecording() {
+    if (!image) return;
+
+    // Force animation if not active
+    if (!isAnimating) toggleAnimation();
+
+    const stream = imageCanvas.captureStream(30);
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+
+    recordedChunks = [];
+    isRecording = true;
+    recordButton.innerHTML = `<i class="ri-stop-circle-line"></i> Stop Rec`;
+    recordButton.classList.add('recording-active');
+
+    mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = exportVideo;
+    mediaRecorder.start();
+}
+
+function stopRecording() {
+    isRecording = false;
+    recordButton.innerHTML = `<i class="ri-record-circle-line"></i> Record`;
+    recordButton.classList.remove('recording-active');
+    mediaRecorder.stop();
+    if (isAnimating) toggleAnimation();
+}
+
+function exportVideo() {
+    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `glitch-animation-${Date.now()}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
 }
 
 resetButton.addEventListener('click', () => {
     filters = JSON.parse(JSON.stringify(defaultFilters));
+    if (isAnimating) toggleAnimation();
     applyFilters();
     createFilters();
 });

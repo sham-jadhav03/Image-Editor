@@ -144,6 +144,23 @@ main section .bottom .placeholder i {
     opacity: 0.5;
 }
 
+#record-btn.recording-active {
+    background-color: var(--bg-danger-color);
+    color: white;
+    box-shadow: 0 0 10px red;
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0.7;
+    }
+}
+
 canvas {
     max-width: 100%;
     max-height: 100%;
