@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Colors - HSL for flexibility */
+    --hue-primary: 260;
+    /* Violet/Indigo */
+    --hue-danger: 0;
+    --hue-success: 145;
+
+    /* Base Backgrounds */
+    --bg-main: #0f0f13;
+    --bg-panel: rgba(30, 30, 35, 0.7);
+    /* Glass effect base */
+    --bg-panel-hover: rgba(40, 40, 45, 0.8);
+
+    /* Interactive Elements */
+    --primary-color: hsl(var(--hue-primary), 100%, 65%);
+    --primary-hover: hsl(var(--hue-primary), 100%, 70%);
+    --bg-active-color: hsla(var(--hue-primary), 80%, 60%, 0.15);
+
+    /* Utility Colors */
+    --bg-danger-color: hsl(var(--hue-danger), 80%, 55%);
+    --bg-success-color: hsl(var(--hue-success), 65%, 45%);
+
+    /* Text Colors */
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-muted: #52525b;
+    --text-on-accent: #ffffff;
+
+    /* Spacing */
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+
+    /* Typography */
+    --font-heading: 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+
+    /* Effects */
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-glow: 0 0 15px hsla(var(--hue-primary), 70%, 60%, 0.3);
+
+    --backdrop-blur: blur(12px);
+    --border-light: 1px solid rgba(255, 255, 255, 0.1);
+    --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
