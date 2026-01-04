@@ -136,6 +136,7 @@ main section .bottom .placeholder {
     color: var(--text-secondary);
     gap: var(--space-md);
     pointer-events: none;
+    margin-left: 270px;
 }
 
 main section .bottom .placeholder i {
