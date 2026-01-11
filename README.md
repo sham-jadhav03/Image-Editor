@@ -17,6 +17,7 @@ A modern, high-performance web application for editing images directly in the br
 - **🎨 One-Click Presets:** Instantly apply professional looks like *Vintage*, *Cinematic*, *Noir*, and *Glitch*.
 - **📱 Fully Responsive:** Optimized for desktops, tablets, and mobile devices with touch-friendly sliders and controls.
 - **🎥 Animation & Recording:** Create dynamic "Cyber Glitch" effects and record/download them as `.webm` videos directly from the browser.
+- **📏 Image Size Reducer:** Reduce photo dimensions and file size (KB) with precision. Features live size estimation and JPEG quality control.
 - **🔒 Privacy First:** All processing happens client-side. Your photos never leave your browser.
 
 ---
@@ -67,8 +68,12 @@ No build steps or complex installation required. This project is built with stan
 3.  **Animate & Record:**
     - Click **Animate** to see a live "Cyber Glitch" effect.
     - Click **Record** to capture the animation. Hit "Stop Rec" to automatically download the video.
-4.  **Reset:** Made a mistake? Click the "Reset" button to revert to the original image.
-5.  **Download:** Click the "Download" button to save your masterpiece as a `.png` file.
+4.  **Resize & Optimize:**
+    - Enter desired **Width** or **Height** in the resize panel.
+    - Toggle **Maintain Aspect Ratio** to keep the image proportions.
+    - Use the **Quality** slider to compress the image and watch the **Estimated Size** update in real-time.
+5.  **Reset:** Made a mistake? Click the "Reset" button to revert to the original image and dimensions.
+6.  **Download:** Click the "Download" button to save your masterpiece. (Saves as `.jpg` if quality is reduced, or `.png` for lossless).
 
 ---
 
@@ -85,6 +90,21 @@ No build steps or complex installation required. This project is built with stan
 | **Sepia** | Applies a warm, antique tone. | % |
 | **Opacity** | Adjusts the transparency of the image. | % |
 | **Invert** | Inverts the colors (creates a negative effect). | % |
+| **Resize** | Change physical dimensions (Width/Height). | px |
+| **Quality** | JPEG compression level for file size reduction. | % |
+
+---
+
+## 📏 Resize & Quality Control
+
+This version introduces powerful tools for optimizing your images for the web:
+
+-   **Dimension Control:** Adjust the width and height of your image. The aspect ratio is maintained by default to prevent stretching.
+-   **File Size Optimization:** Using the Quality slider, you can apply JPEG compression to significantly reduce the file size (KB).
+-   **Live Estimation:** The editor provides a real-time estimate of the final file size, helping you find the perfect balance between quality and performance.
+-   **Smart Export:** 
+    -   **100% Quality:** Saved as `.png` (lossless, high quality).
+    -   **Lower Quality:** Saved as `.jpg` (compressed, small file size).
 
 ---
 
