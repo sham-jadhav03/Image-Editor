@@ -50,6 +50,36 @@
                 <div class="presets">
 
                 </div>
+
+                <h2 style="margin-top: var(--space-md);">Resize & Quality</h2>
+                <div class="resize-controls">
+                    <div class="resize-inputs">
+                        <div class="input-group">
+                            <label for="resize-width">Width</label>
+                            <input type="number" id="resize-width" placeholder="Width">
+                        </div>
+                        <div class="input-group">
+                            <label for="resize-height">Height</label>
+                            <input type="number" id="resize-height" placeholder="Height">
+                        </div>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="aspect-ratio" checked>
+                        <label for="aspect-ratio">Maintain Aspect Ratio</label>
+                    </div>
+                    <button class="btn" id="resize-btn" style="width: 100%; margin-top: 5px;">Apply Resize</button>
+
+                    <div class="quality-control" style="margin-top: 15px;">
+                        <div class="filter-info">
+                            <p>Quality (JPEG)</p>
+                            <span id="quality-value">100%</span>
+                        </div>
+                        <input type="range" id="quality-slider" min="1" max="100" value="100">
+                        <p id="size-info"
+                            style="font-size: var(--text-xs); color: var(--text-secondary); margin-top: 8px; text-align: right;">
+                            Estimated Size: -- KB</p>
+                    </div>
+                </div>
             </div>
         </section>
     </main>

@@ -21,6 +21,13 @@ const downloadButton = document.querySelector('#download-btn');
 const animButton = document.querySelector('#anim-btn');
 const recordButton = document.querySelector('#record-btn');
 const dropZone = document.querySelector('.bottom');
+const resizeWidthInput = document.querySelector('#resize-width');
+const resizeHeightInput = document.querySelector('#resize-height');
+const aspectRatioCheckbox = document.querySelector('#aspect-ratio');
+const resizeButton = document.querySelector('#resize-btn');
+const qualitySlider = document.querySelector('#quality-slider');
+const qualityValue = document.querySelector('#quality-value');
+const sizeInfo = document.querySelector('#size-info');
 const canvasCtx = imageCanvas.getContext('2d');
 let file = null;
 let image = null;
@@ -74,7 +81,7 @@ function createFilters() {
     });
 }
 
-// Drag and Drop Logic
+
 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropZone.addEventListener(eventName, preventDefaults, false);
 });
@@ -131,6 +138,8 @@ function loadImage(file) {
         image = img;
         imageCanvas.width = img.width;
         imageCanvas.height = img.height;
+        resizeWidthInput.value = img.width;
+        resizeHeightInput.value = img.height;
         applyFilters();
         if (recordButton) recordButton.disabled = false;
     };
@@ -159,10 +168,25 @@ function applyFilters() {
     if (!image) return;
     canvasCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
     canvasCtx.filter = getFilterString();
-    canvasCtx.drawImage(image, 0, 0);
+    canvasCtx.drawImage(image, 0, 0, imageCanvas.width, imageCanvas.height);
+    updateEstimatedSize();
 }
 
-// --- Animation Logic ---
+function updateEstimatedSize() {
+    if (!image) return;
+    const quality = qualitySlider.value / 100;
+    let dataUrl;
+    if (quality < 1) {
+        dataUrl = imageCanvas.toDataURL('image/jpeg', quality);
+    } else {
+        dataUrl = imageCanvas.toDataURL('image/png');
+    }
+
+    // Estimate size from base64 string (0.75 ratio)
+    const sizeInBytes = Math.floor((dataUrl.length - 22) * 0.75);
+    const sizeInKb = (sizeInBytes / 1024).toFixed(1);
+    sizeInfo.innerText = `Estimated Size: ${sizeInKb} KB ${quality < 1 ? '(JPEG)' : '(PNG)'}`;
+}
 
 function toggleAnimation() {
     if (isAnimating) {
@@ -183,12 +207,10 @@ animButton.addEventListener('click', toggleAnimation);
 function animateGlitch() {
     if (!isAnimating) return;
 
-    // 1. Draw base filtered image
     canvasCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
     canvasCtx.filter = getFilterString();
-    canvasCtx.drawImage(image, 0, 0);
+    canvasCtx.drawImage(image, 0, 0, imageCanvas.width, imageCanvas.height);
 
-    // 2. Add Glitch Effects
     if (Math.random() > 0.8) {
         const sliceHeight = Math.random() * 50 + 5;
         const sliceY = Math.random() * imageCanvas.height;
@@ -200,19 +222,16 @@ function animateGlitch() {
         );
     }
 
-    // RGB Split / Color Shift
     if (Math.random() > 0.9) {
         const offset = (Math.random() - 0.5) * 10;
         canvasCtx.globalCompositeOperation = 'screen';
         canvasCtx.filter = getFilterString() + ` hue-rotate(90deg) opacity(0.5)`;
-        canvasCtx.drawImage(image, offset, 0);
+        canvasCtx.drawImage(image, offset, 0, imageCanvas.width, imageCanvas.height);
         canvasCtx.globalCompositeOperation = 'source-over';
     }
 
     animationId = requestAnimationFrame(animateGlitch);
 }
-
-// --- Recording Logic ---
 
 recordButton.addEventListener('click', () => {
     if (isRecording) {
@@ -225,7 +244,6 @@ recordButton.addEventListener('click', () => {
 function startRecording() {
     if (!image) return;
 
-    // Force animation if not active
     if (!isAnimating) toggleAnimation();
 
     const stream = imageCanvas.captureStream(30);
@@ -270,6 +288,14 @@ function exportVideo() {
 resetButton.addEventListener('click', () => {
     filters = JSON.parse(JSON.stringify(defaultFilters));
     if (isAnimating) toggleAnimation();
+
+    if (image) {
+        imageCanvas.width = image.width;
+        imageCanvas.height = image.height;
+        resizeWidthInput.value = image.width;
+        resizeHeightInput.value = image.height;
+    }
+
     applyFilters();
     createFilters();
 });
@@ -277,8 +303,16 @@ resetButton.addEventListener('click', () => {
 downloadButton.addEventListener('click', () => {
     if (!image) return;
     const link = document.createElement('a');
-    link.download = `edited-image-${Date.now()}.png`;
-    link.href = imageCanvas.toDataURL();
+    const quality = qualitySlider.value / 100;
+
+    if (quality < 1) {
+        link.download = `edited-image-${Date.now()}.jpg`;
+        link.href = imageCanvas.toDataURL('image/jpeg', quality);
+    } else {
+        link.download = `edited-image-${Date.now()}.png`;
+        link.href = imageCanvas.toDataURL();
+    }
+
     link.click();
 });
 
@@ -323,3 +357,35 @@ function presetfilters() {
 
 createFilters();
 presetfilters();
+
+qualitySlider.addEventListener('input', () => {
+    qualityValue.innerText = `${qualitySlider.value}%`;
+    updateEstimatedSize();
+});
+
+resizeWidthInput.addEventListener('input', () => {
+    if (!image) return;
+    if (aspectRatioCheckbox.checked) {
+        const ratio = image.width / image.height;
+        resizeHeightInput.value = Math.round(resizeWidthInput.value / ratio);
+    }
+});
+
+resizeHeightInput.addEventListener('input', () => {
+    if (!image) return;
+    if (aspectRatioCheckbox.checked) {
+        const ratio = image.width / image.height;
+        resizeWidthInput.value = Math.round(resizeHeightInput.value * ratio);
+    }
+});
+
+resizeButton.addEventListener('click', () => {
+    if (!image) return;
+    const w = parseInt(resizeWidthInput.value);
+    const h = parseInt(resizeHeightInput.value);
+    if (w > 0 && h > 0) {
+        imageCanvas.width = w;
+        imageCanvas.height = h;
+        applyFilters();
+    }
+});
